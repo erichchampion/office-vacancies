@@ -1,0 +1,57 @@
+{
+  "eligibility_matrix": {
+    "Tier 1": {
+      "description": "County-Wide",
+      "offices": [
+        "Board of Supervisors (Dist 5)",
+        "County Clerk",
+        "Treasurer-Tax Collector",
+        "District Attorney",
+        "Sheriff"
+      ]
+    },
+    "Tier 2": {
+      "description": "City/Agency",
+      "offices": [
+        "Scotts Valley City Council",
+        "SVUSD Board",
+        "Cabrillo Trustee (Area 1)",
+        "SV Fire",
+        "SV Water"
+      ]
+    },
+    "Tier 3": {
+      "description": "Parcel-Specific",
+      "offices": [
+        "San Lorenzo Valley Water",
+        "Small Special Districts"
+      ]
+    }
+  },
+  "sources": {
+    "nominations": {
+      "base_url": "https://votescount.santacruzcountyca.gov",
+      "target_keyword": "Candidate Watch"
+    },
+    "notices": [
+      {
+        "name": "Scotts Valley Official Notices",
+        "url": "https://www.scottsvalley.gov/notices",
+        "patterns": [
+          "Notice of Vacancy",
+          "Filling Vacancy",
+          "Appointment to the Board"
+        ]
+      }
+    ]
+  },
+  "notifications": {
+    "type": "github_issue",
+    "repository": "erichchampion/office-vacancies",
+    "email": {
+      "enabled": false,
+      "api_key": "env:SENDGRID_API_KEY",
+      "to": "user@example.com"
+    }
+  }
+}
