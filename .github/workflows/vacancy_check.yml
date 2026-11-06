@@ -30,7 +30,7 @@ jobs:
         run: playwright install chromium
 
       - name: Run Vacancy Engine
-        run: python src/main.py
+        run: python -m src.main
 
       - name: Commit and Push State
         run: |
