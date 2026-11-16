@@ -16,14 +16,21 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Verify push permission
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          if [ "$(gh api repos/${{ github.repository }} --jq '.permissions.push')" != "true" ]; then
+          echo "Token permissions as reported by the API (unreliable for bot tokens):"
+          gh api repos/${{ github.repository }} --jq '.permissions' || true
+          # .permissions is documented for user tokens and can read false for
+          # the Actions bot even when push works, so prove write access by
+          # pushing and deleting a throwaway branch — the same credentials
+          # path the commit step uses.
+          probe="ci/token-write-probe-${{ github.run_id }}"
+          if git push origin "HEAD:refs/heads/$probe"; then
+            git push origin --delete "$probe" || true
+            echo "Token has push access"
+          else
             echo "::error::GITHUB_TOKEN cannot push to this repository. Go to Settings → Actions → General → Workflow permissions and select 'Read and write permissions'."
             exit 1
           fi
-          echo "Token has push access"
 
       - name: Set up Python
         uses: actions/setup-python@v5
