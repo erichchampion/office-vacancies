@@ -2,8 +2,7 @@ name: Vacancy Check
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Daily
-    - cron: '0 0 * * 0' # Weekly (redundant but explicit)
+    - cron: '0 0 * * 0' # Sundays at 00:00 UTC
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -15,6 +14,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Verify push permission
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$(gh api repos/${{ github.repository }} --jq '.permissions.push')" != "true" ]; then
+            echo "::error::GITHUB_TOKEN cannot push to this repository. Go to Settings → Actions → General → Workflow permissions and select 'Read and write permissions'."
+            exit 1
+          fi
+          echo "Token has push access"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,6 +39,8 @@ jobs:
         run: playwright install chromium
 
       - name: Run Vacancy Engine
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
         run: python -m src.main
 
       - name: Commit and Push State
@@ -37,5 +48,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/state.json
-          git commit -m "Update vacancy state [skip ci]" || echo "No changes to commit"
-          git push
+          if git diff --cached --quiet; then
+            echo "No changes to vacancy state; nothing to commit or push"
+            exit 0
+          fi
+          git commit -m "Update vacancy state [skip ci]"
+          git push origin main
